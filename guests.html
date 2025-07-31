@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PVT Hostel - Guest List</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>PVT Hostel</h1>
+            <p>Guest Management</p>
+        </header>
+
+        <main>
+            <div class="guests-header">
+                <h2>Current Guests</h2>
+                <div>
+                    <a href="index.html" class="btn btn-primary">Check In New Guest</a>
+                    <button class="btn btn-secondary" onclick="exportData()">Export Data</button>
+                </div>
+            </div>
+
+            <div id="guestsContainer">
+                <!-- Guests will be loaded here -->
+            </div>
+        </main>
+
+        <footer>
+            <p>&copy; 2025 PVT Hostel. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <script>
+        // Get guests from localStorage
+        function getGuests() {
+            const guests = localStorage.getItem('hostelGuests');
+            return guests ? JSON.parse(guests) : [];
+        }
+
+        // Display guests
+        function displayGuests() {
+            const guests = getGuests();
+            const container = document.getElementById('guestsContainer');
+            
+            if (guests.length === 0) {
+                container.innerHTML = '<div class="no-guests">No guests checked in yet.</div>';
+                return;
+            }
+            
+            // Sort guests by check-in date (most recent first)
+            guests.sort((a, b) => new Date(b.checkedInAt) - new Date(a.checkedInAt));
+            
+            const table = document.createElement('table');
+            table.className = 'guests-table';
+            
+            // Create header
+            const header = `
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Room</th>
+                        <th>ID/Passport</th>
+                        <th>Check-In</th>
+                        <th>Check-Out</th>
+                        <th>Contact</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+            `;
+            
+            // Create body
+            const rows = guests.map(guest => `
+                <tr>
+                    <td>${guest.firstName} ${guest.lastName}</td>
+                    <td>${guest.roomNumber}</td>
+                    <td>${guest.idNumber}</td>
+                    <td>${formatDate(guest.checkInDate)}</td>
+                    <td>${formatDate(guest.checkOutDate)}</td>
+                    <td>
+                        ${guest.email ? `<div>${guest.email}</div>` : ''}
+                        ${guest.phone ? `<div>${guest.phone}</div>` : ''}
+                    </td>
+                    <td>
+                        <button class="btn btn-link" onclick="removeGuest('${guest.id}')">Check Out</button>
+                    </td>
+                </tr>
+            `).join('');
+            
+            table.innerHTML = header + '<tbody>' + rows + '</tbody>';
+            container.innerHTML = '';
+            container.appendChild(table);
+        }
+
+        // Format date
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric' 
+            });
+        }
+
+        // Remove guest
+        function removeGuest(guestId) {
+            if (confirm('Are you sure you want to check out this guest?')) {
+                let guests = getGuests();
+                guests = guests.filter(g => g.id !== guestId);
+                localStorage.setItem('hostelGuests', JSON.stringify(guests));
+                displayGuests();
+                showMessage('Guest checked out successfully!', 'success');
+            }
+        }
+
+        // Show message
+        function showMessage(message, type) {
+            const existingMessage = document.querySelector('.success-message, .error-message');
+            if (existingMessage) {
+                existingMessage.remove();
+            }
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = type === 'success' ? 'success-message' : 'error-message';
+            messageDiv.textContent = message;
+            
+            const main = document.querySelector('main');
+            main.insertBefore(messageDiv, main.firstChild);
+            
+            setTimeout(() => {
+                messageDiv.remove();
+            }, 3000);
+        }
+
+        // Export data
+        function exportData() {
+            const guests = getGuests();
+            
+            if (guests.length === 0) {
+                showMessage('No guest data to export', 'error');
+                return;
+            }
+            
+            const dataStr = JSON.stringify(guests, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(dataBlob);
+            link.download = `guests_export_${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+            
+            showMessage('Guest data exported successfully!', 'success');
+        }
+
+        // Load guests on page load
+        displayGuests();
+    </script>
+</body>
+</html>
