@@ -1,6 +1,6 @@
 {
   "name": "checkin-pvthostel",
-  "buildCommand": "echo 'No build required'",
-  "outputDirectory": ".",
-  "framework": null
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "framework": "vite"
 }
