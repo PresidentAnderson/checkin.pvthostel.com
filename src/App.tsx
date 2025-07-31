@@ -6,6 +6,7 @@ import CheckIn from './pages/CheckIn'
 import Guests from './pages/Guests'
 import Rooms from './pages/Rooms'
 import Reports from './pages/Reports'
+import CalendarPage from './pages/Calendar'
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
           <Route path="/checkin" element={<CheckIn />} />
           <Route path="/guests" element={<Guests />} />
           <Route path="/rooms" element={<Rooms />} />
+          <Route path="/calendar" element={<CalendarPage />} />
           <Route path="/reports" element={<Reports />} />
         </Routes>
       </Layout>

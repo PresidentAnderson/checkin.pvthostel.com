@@ -41,3 +41,23 @@ export interface CheckInFormData {
   paidAmount: number;
   notes?: string;
 }
+
+export interface CalendarEvent {
+  id: string;
+  title: string;
+  start: Date;
+  end: Date;
+  resource: {
+    type: 'check-in' | 'check-out' | 'stay';
+    guest: Guest;
+    roomNumber: string;
+    status: 'confirmed' | 'pending' | 'cancelled';
+  };
+}
+
+export interface CalendarView {
+  month: 'month';
+  week: 'week';
+  day: 'day';
+  agenda: 'agenda';
+}

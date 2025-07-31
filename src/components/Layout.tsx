@@ -11,6 +11,7 @@ const navigation = [
   { name: 'Check In', href: '/checkin', icon: '🏨' },
   { name: 'Guests', href: '/guests', icon: '👥' },
   { name: 'Rooms', href: '/rooms', icon: '🚪' },
+  { name: 'Calendar', href: '/calendar', icon: '📅' },
   { name: 'Reports', href: '/reports', icon: '📈' },
 ]
 

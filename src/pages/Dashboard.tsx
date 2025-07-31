@@ -1,3 +1,6 @@
+import { Link } from 'react-router-dom'
+import Calendar from '@/components/Calendar'
+
 export default function Dashboard() {
   const stats = [
     { name: 'Total Guests', value: '42', change: '+4.75%', changeType: 'positive' },
@@ -36,7 +39,7 @@ export default function Dashboard() {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 mb-8">
         <div className="card">
           <h3 className="text-lg font-medium text-gray-900 mb-4">Recent Check-ins</h3>
           <div className="space-y-3">
@@ -65,6 +68,22 @@ export default function Dashboard() {
               </div>
             ))}
           </div>
+        </div>
+      </div>
+
+      {/* Calendar Widget */}
+      <div className="card">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-medium text-gray-900">Calendar Overview</h3>
+          <Link
+            to="/calendar"
+            className="text-primary-600 hover:text-primary-800 text-sm font-medium"
+          >
+            View Full Calendar →
+          </Link>
+        </div>
+        <div style={{ height: '400px' }}>
+          <Calendar className="border-0 shadow-none" />
         </div>
       </div>
     </div>
