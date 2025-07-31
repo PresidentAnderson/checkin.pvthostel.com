@@ -9,10 +9,14 @@ interface LayoutProps {
 const navigation = [
   { name: 'Dashboard', href: '/', icon: '📊' },
   { name: 'Check In', href: '/checkin', icon: '🏨' },
+  { name: 'Reservations', href: '/reservations', icon: '📋' },
   { name: 'Guests', href: '/guests', icon: '👥' },
   { name: 'Rooms', href: '/rooms', icon: '🚪' },
   { name: 'Calendar', href: '/calendar', icon: '📅' },
-  { name: 'Reports', href: '/reports', icon: '📈' },
+  { name: 'Housekeeping', href: '/housekeeping', icon: '🧹' },
+  { name: 'Staff', href: '/staff', icon: '👨‍💼' },
+  { name: 'Analytics', href: '/analytics', icon: '📈' },
+  { name: 'Settings', href: '/settings', icon: '⚙️' },
 ]
 
 export default function Layout({ children }: LayoutProps) {
