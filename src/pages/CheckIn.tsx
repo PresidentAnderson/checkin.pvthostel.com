@@ -26,8 +26,6 @@ export default function CheckIn() {
     handleSubmit,
     formState: { errors },
     reset,
-    watch,
-    setValue,
   } = useForm<CheckInFormData>({
     resolver: zodResolver(checkInSchema),
     defaultValues: {
