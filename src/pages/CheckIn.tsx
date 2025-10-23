@@ -1,9 +1,12 @@
+import React from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import toast from 'react-hot-toast'
 import { CheckInFormData } from '@/types'
 import { format } from 'date-fns'
+import { guestApi, roomApi } from '@/services/api'
+import { useGuestStore } from '@/store/useGuestStore'
 
 const checkInSchema = z.object({
   firstName: z.string().min(1, 'First name is required'),
@@ -21,11 +24,14 @@ const checkInSchema = z.object({
 })
 
 export default function CheckIn() {
+  const { addGuest, setLoading, setError } = useGuestStore()
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isSubmitting },
     reset,
+    watch,
+    setValue,
   } = useForm<CheckInFormData>({
     resolver: zodResolver(checkInSchema),
     defaultValues: {
@@ -37,14 +43,69 @@ export default function CheckIn() {
     },
   })
 
+  // Watch check-in and check-out dates to auto-calculate nights
+  const checkInDate = watch('checkInDate')
+  const checkOutDate = watch('checkOutDate')
+
+  // Auto-calculate nights when dates change
+  React.useEffect(() => {
+    if (checkInDate && checkOutDate) {
+      const start = new Date(checkInDate)
+      const end = new Date(checkOutDate)
+      const diffTime = Math.abs(end.getTime() - start.getTime())
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+      setValue('nights', diffDays)
+    }
+  }, [checkInDate, checkOutDate])
+
   const onSubmit = async (data: CheckInFormData) => {
     try {
-      // TODO: Implement API call to save guest data
-      console.log('Check-in data:', data)
+      setLoading(true)
+      setError(null)
+
+      // Validate room availability
+      const availableRooms = await roomApi.getAvailable(data.checkInDate, data.checkOutDate)
+      const selectedRoom = availableRooms.find(room => room.number === data.roomNumber)
+      
+      if (!selectedRoom) {
+        throw new Error(`Room ${data.roomNumber} is not available for the selected dates`)
+      }
+
+      // Create guest check-in data
+      const guestData = {
+        ...data,
+        id: `guest-${Date.now()}`,
+        status: 'checked_in',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      }
+
+      // Check if API is available, fallback to store-only operation
+      let apiGuest
+      try {
+        apiGuest = await guestApi.checkIn(guestData)
+        addGuest(apiGuest)
+      } catch (apiError) {
+        // Fallback to local store if API is not available
+        console.warn('API not available, using local store:', apiError)
+        addGuest(guestData)
+      }
+
+      // Update room status
+      try {
+        await roomApi.updateStatus(selectedRoom.id, 'occupied')
+      } catch (roomError) {
+        console.warn('Failed to update room status:', roomError)
+      }
+
       toast.success(`Guest ${data.firstName} ${data.lastName} checked in successfully!`)
       reset()
-    } catch (error) {
-      toast.error('Failed to check in guest. Please try again.')
+    } catch (error: any) {
+      console.error('Check-in error:', error)
+      setError(error.message || 'Failed to check in guest')
+      toast.error(error.message || 'Failed to check in guest. Please try again.')
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -236,8 +297,12 @@ export default function CheckIn() {
             >
               Cancel
             </button>
-            <button type="submit" className="btn-primary">
-              Check In Guest
+            <button 
+              type="submit" 
+              disabled={isSubmitting}
+              className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isSubmitting ? 'Checking In...' : 'Check In Guest'}
             </button>
           </div>
         </form>
